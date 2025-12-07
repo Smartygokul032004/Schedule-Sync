@@ -1,5 +1,23 @@
 # SchedulSync - Complete Project Overview & Report
 
+## 🚀 Quick Deployment
+
+**Ready to deploy?** Start here: [`DEPLOY_NOW.md`](./DEPLOY_NOW.md)
+
+Deploy to **Render** in 5 minutes:
+1. Go to https://render.com
+2. Sign up with GitHub
+3. Create new Web Service with your repo
+4. Add environment variables
+5. Click deploy! ✨
+
+See also:
+- [`RENDER_DEPLOYMENT.md`](./RENDER_DEPLOYMENT.md) - Detailed step-by-step guide
+- [`QUICK_DEPLOY.md`](./QUICK_DEPLOY.md) - Quick reference checklist
+- [`VISUAL_DEPLOYMENT_GUIDE.md`](./VISUAL_DEPLOYMENT_GUIDE.md) - Visual guide with diagrams
+
+---
+
 ## Executive Summary
 
 **SchedulSync** is a comprehensive appointment scheduling system designed for educational institutions. It facilitates seamless scheduling between faculty members and students, allowing faculty to create appointment slots and students to book them. The system includes real-time availability status tracking, profile management, and booking management capabilities.
@@ -12,7 +30,8 @@
 **Project Type:** Full-Stack Web Application  
 **Duration:** Final Year Project  
 **Tech Stack:** MERN Stack (MongoDB, Express, React, Node.js)  
-**Repository:** SchedulSync-Project-main
+**Repository:** [SchedulSync-Project-main](https://github.com/Smartygokul032004/Schedule-Sync)  
+**Status:** ✅ **PRODUCTION READY**
 
 ---
 
@@ -39,15 +58,15 @@
 ### Database
 - **Type:** NoSQL (MongoDB)
 - **Hosting:** MongoDB Atlas Cloud
-- **Connection:** mongodb+srv://smarty_db:smarty123@cluster0.jg7eazy.mongodb.net
+- **Connection:** Configured via `MONGODB_URI` environment variable
 
 ### Development Tools
 - **Task Runner:** npm scripts
 - **Linting:** ESLint with JavaScript ruleset
 - **Code Quality:** TypeScript strict mode enabled
+- **Deployment:** Render.com ready (see `DEPLOY_NOW.md`)
 
 ---
-
 ## Project Structure
 
 ```
@@ -72,9 +91,12 @@ SchedulSync-Project-main/
 │   │
 │   ├── components/                     # Reusable components
 │   │   ├── CalendarView.tsx            # Calendar display
-│   │   ├── CreateSlotModal.tsx         # Create slot form modal
+│   │   ├── CreateSlotModal.tsx         # Create single slot modal
+│   │   ├── CreateBulkSlotModal.tsx     # Bulk slot creation (NEW)
 │   │   ├── EditSlotModal.tsx           # Edit slot form modal
 │   │   ├── ViewBookingsModal.tsx       # View bookings modal
+│   │   ├── CancellationModal.tsx       # Cancellation dialog (NEW)
+│   │   ├── NotificationBell.tsx        # Notifications UI (NEW)
 │   │   ├── FacultyCard.tsx             # Faculty member card
 │   │   └── OnlineStatusBadge.tsx       # Online/offline indicator
 │   │
@@ -90,16 +112,35 @@ SchedulSync-Project-main/
 │   ├── models/                         # MongoDB Schemas (Mongoose)
 │   │   ├── User.ts                     # User model (Faculty/Student)
 │   │   ├── Slot.ts                     # Appointment slot model
-│   │   └── Booking.ts                  # Booking model (NEW - updated)
+│   │   ├── Booking.ts                  # Booking model (with cancellation/rescheduling)
+│   │   └── Notification.ts             # Notification model (NEW)
 │   │
 │   ├── routes/                         # API endpoints
 │   │   ├── auth.ts                     # Authentication endpoints
-│   │   ├── faculty.ts                  # Faculty-specific endpoints
-│   │   ├── student.ts                  # Student-specific endpoints
+│   │   ├── faculty.ts                  # Faculty-specific endpoints (includes bulk-slots)
+│   │   ├── student.ts                  # Student-specific endpoints (includes reschedule)
+│   │   ├── notifications.ts            # Notification endpoints (NEW)
 │   │   └── public.ts                   # Public access endpoints
 │   │
-│   └── middleware/                     # Express middleware
-│       └── auth.ts                     # JWT authentication middleware
+│   ├── middleware/                     # Express middleware
+│   │   └── auth.ts                     # JWT authentication middleware
+│   │
+│   └── utils/                          # Backend utilities
+│       └── notifications.ts            # Notification helper functions (NEW)
+│
+├── Documentation Files
+│   ├── DEPLOY_NOW.md                   # ⭐ START HERE - Quick deployment guide
+│   ├── RENDER_DEPLOYMENT.md            # Detailed Render.com deployment
+│   ├── QUICK_DEPLOY.md                 # Quick reference checklist
+│   ├── VISUAL_DEPLOYMENT_GUIDE.md      # Visual guide with diagrams
+│   ├── DEPLOYMENT_GUIDE.md             # Complete deployment guide
+│   ├── DEPLOYMENT_SUMMARY.md           # Comprehensive summary
+│   ├── CODE_QUALITY_REPORT.md          # Code verification report
+│   ├── ADVANCED_FEATURES.md            # Feature documentation
+│   ├── INTEGRATION_GUIDE.md            # Component integration guide
+│   ├── IMPLEMENTATION_SUMMARY.md       # Implementation details
+│   ├── SETUP.md                        # Local development setup
+│   └── .env.example                    # Environment variables template
 │
 ├── Configuration Files
 │   ├── package.json                    # Dependencies & scripts
@@ -109,6 +150,8 @@ SchedulSync-Project-main/
 │   ├── vite.config.ts                  # Vite build configuration
 │   ├── tailwind.config.js              # Tailwind CSS configuration
 │   ├── postcss.config.js               # PostCSS configuration
+│   ├── eslint.config.js                # ESLint configuration
+│   ├── render.yaml                     # Render.com deployment config
 │   ├── eslint.config.js                # ESLint configuration
 │   ├── .env                            # Environment variables
 │   └── .gitignore                      # Git ignore rules
