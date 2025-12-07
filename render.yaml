@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: schedulesync-backend
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run server
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: PORT
+        value: 5000
+    healthCheckPath: /health
+    publicDir: dist
+
+  - type: static
+    name: schedulesync-frontend
+    staticPublishPath: dist
+    buildCommand: npm install && npm run build
+    envVars:
+      - key: VITE_API_URL
+        value: https://schedulesync-backend.onrender.com/api

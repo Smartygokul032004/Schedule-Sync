@@ -2,6 +2,8 @@ import express, { type Request, type Response } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import authRoutes from './routes/auth.ts';
 import facultyRoutes from './routes/faculty.ts';
@@ -12,6 +14,8 @@ import notificationRoutes from './routes/notifications.ts';
 dotenv.config();
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(cors());
 app.use(express.json());
@@ -31,6 +35,15 @@ app.use('/api/notifications', notificationRoutes);
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+
+// Serve static frontend files in production
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(__dirname, '../dist');
+  app.use(express.static(distPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

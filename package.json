@@ -1,7 +1,7 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "schedulesync",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
-    "server": "ts-node server/index.ts"
+    "server": "ts-node server/index.ts",
+    "start": "NODE_ENV=production ts-node server/index.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
