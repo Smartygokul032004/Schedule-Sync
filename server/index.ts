@@ -38,10 +38,9 @@ app.get('/health', (req, res) => {
 
 // Serve static frontend files in production
 if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '../dist');
+  const distPath = path.resolve(__dirname, '../dist');
   app.use(express.static(distPath));
-  // Catch-all route for SPA - must be last
-  app.use((req, res) => {
+  app.get(/^\/(?!api\/).*/, (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }
