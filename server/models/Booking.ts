@@ -9,7 +9,12 @@ interface IBooking extends mongoose.Document {
   originalBookingId?: mongoose.Types.ObjectId;
   rescheduledTo?: mongoose.Types.ObjectId;
   recurringAppointmentId?: mongoose.Types.ObjectId;
+  bookedAt: Date;
+  approvedAt?: Date;
+  rejectedAt?: Date;
+  cancelledAt?: Date;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const bookingSchema = new mongoose.Schema<IBooking>(
@@ -52,6 +57,10 @@ const bookingSchema = new mongoose.Schema<IBooking>(
     },
     status: { type: String, enum: ['pending', 'approved', 'rejected', 'cancelled'], default: 'pending' },
     cancellationReason: String,
+    bookedAt: { type: Date, default: Date.now },
+    approvedAt: Date,
+    rejectedAt: Date,
+    cancelledAt: Date,
     originalBookingId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Booking',

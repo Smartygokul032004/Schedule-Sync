@@ -233,6 +233,7 @@ router.put('/bookings/:bookingId/cancel', async (req: AuthRequest, res: Response
 
     booking.status = 'cancelled';
     booking.cancellationReason = reason || 'Cancelled by student';
+    booking.cancelledAt = new Date();
     await booking.save();
 
     // Send notification to faculty

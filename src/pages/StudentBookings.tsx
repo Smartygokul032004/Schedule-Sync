@@ -17,6 +17,10 @@ interface Booking {
     location: string;
   };
   createdAt: string;
+  bookedAt?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
+  cancelledAt?: string;
 }
 
 export const StudentBookings: React.FC = () => {
@@ -73,6 +77,14 @@ export const StudentBookings: React.FC = () => {
       default:
         return 'bg-slate-100 text-slate-800';
     }
+  };
+
+  const getTimestampInfo = (booking: Booking) => {
+    if (booking.approvedAt) return { label: 'Approved on', time: booking.approvedAt };
+    if (booking.rejectedAt) return { label: 'Rejected on', time: booking.rejectedAt };
+    if (booking.cancelledAt) return { label: 'Cancelled on', time: booking.cancelledAt };
+    if (booking.bookedAt) return { label: 'Booked on', time: booking.bookedAt };
+    return { label: 'Booked on', time: booking.createdAt };
   };
 
   if (loading) {
@@ -148,6 +160,10 @@ export const StudentBookings: React.FC = () => {
                           </p>
                           <p className="text-slate-700">
                             <span className="font-medium">Location:</span> {booking.slot.location}
+                          </p>
+                          <p className="text-slate-600 text-xs">
+                            <span className="font-medium">{getTimestampInfo(booking).label}:</span>{' '}
+                            {new Date(getTimestampInfo(booking).time).toLocaleString()}
                           </p>
                         </div>
                       ) : (

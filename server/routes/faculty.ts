@@ -227,7 +227,7 @@ router.put('/bookings/:bookingId/approve', async (req: AuthRequest, res: Respons
   try {
     const booking = await Booking.findByIdAndUpdate(
       req.params.bookingId,
-      { status: 'approved' },
+      { status: 'approved', approvedAt: new Date() },
       { new: true }
     ).populate('studentId', 'name email').populate('slotId');
 
@@ -258,7 +258,7 @@ router.put('/bookings/:bookingId/reject', async (req: AuthRequest, res: Response
     
     const booking = await Booking.findByIdAndUpdate(
       req.params.bookingId,
-      { status: 'rejected' },
+      { status: 'rejected', rejectedAt: new Date() },
       { new: true }
     ).populate('studentId', 'name email').populate('slotId');
 
@@ -287,7 +287,7 @@ router.put('/bookings/:bookingId/cancel', async (req: AuthRequest, res: Response
     
     const booking = await Booking.findByIdAndUpdate(
       req.params.bookingId,
-      { status: 'cancelled', cancellationReason: reason || 'Cancelled by faculty' },
+      { status: 'cancelled', cancellationReason: reason || 'Cancelled by faculty', cancelledAt: new Date() },
       { new: true }
     ).populate('studentId', 'name email');
 
