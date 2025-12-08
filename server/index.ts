@@ -10,6 +10,8 @@ import facultyRoutes from './routes/faculty.ts';
 import studentRoutes from './routes/student.ts';
 import publicRoutes from './routes/public.ts';
 import notificationRoutes from './routes/notifications.ts';
+import recurringRoutes from './routes/recurring.ts';
+import waitlistRoutes from './routes/waitlist.ts';
 
 dotenv.config();
 
@@ -31,6 +33,8 @@ app.use('/api/faculty', facultyRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/recurring', recurringRoutes);
+app.use('/api/waitlist', waitlistRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });

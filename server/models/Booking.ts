@@ -8,6 +8,7 @@ interface IBooking extends mongoose.Document {
   cancellationReason?: string;
   originalBookingId?: mongoose.Types.ObjectId;
   rescheduledTo?: mongoose.Types.ObjectId;
+  recurringAppointmentId?: mongoose.Types.ObjectId;
   createdAt: Date;
 }
 
@@ -64,6 +65,16 @@ const bookingSchema = new mongoose.Schema<IBooking>(
     rescheduledTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Booking',
+      set: (value: any) => {
+        if (typeof value === 'string') {
+          return new mongoose.Types.ObjectId(value);
+        }
+        return value;
+      }
+    },
+    recurringAppointmentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'RecurringAppointment',
       set: (value: any) => {
         if (typeof value === 'string') {
           return new mongoose.Types.ObjectId(value);

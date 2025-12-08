@@ -4,6 +4,7 @@ import { authMiddleware, studentOnly } from '../middleware/auth.ts';
 import Slot from '../models/Slot.ts';
 import Booking from '../models/Booking.ts';
 import User from '../models/User.ts';
+import Waitlist from '../models/Waitlist.ts';
 import { notifyBookingCancelled } from '../utils/notifications.ts';
 
 type Request = express.Request;
@@ -56,20 +57,38 @@ router.get('/faculty/:facultyId/slots', async (req: AuthRequest, res: Response) 
     
     console.log('Found slots:', slots.length);
 
-    const slotsWithBooking = await Promise.all(
+    const slotsWithStatus = await Promise.all(
       slots.map(async (slot) => {
-        const booking = await Booking.findOne({
+        const bookingCount = await Booking.countDocuments({
           slotId: slot._id,
-          status: 'approved',
+          status: { $nin: ['cancelled', 'rejected'] },
         });
+
+        const studentBooking = await Booking.findOne({
+          slotId: slot._id,
+          studentId: req.userId,
+          status: { $nin: ['cancelled', 'rejected'] },
+        });
+
+        const waitlistCount = await Waitlist.countDocuments({
+          slotId: slot._id,
+          status: { $in: ['waiting', 'notified'] },
+        });
+
+        const isFull = bookingCount >= slot.capacity;
+
         return {
           ...slot.toObject(),
-          isBooked: !!booking,
+          isBooked: !!studentBooking,
+          isFull,
+          bookingCount,
+          waitlistCount,
+          availableSpots: Math.max(0, slot.capacity - bookingCount),
         };
       })
     );
 
-    res.json(slotsWithBooking);
+    res.json(slotsWithStatus);
   } catch (error: any) {
     console.error('Error fetching slots:', error);
     res.status(500).json({ error: error.message });
@@ -78,7 +97,7 @@ router.get('/faculty/:facultyId/slots', async (req: AuthRequest, res: Response) 
 
 router.post('/book-slot', async (req: AuthRequest, res: Response) => {
   try {
-    const { slotId } = req.body;
+    const { slotId, withRecurring } = req.body;
 
     if (!slotId) {
       return res.status(400).json({ error: 'Slot ID is required' });
@@ -93,13 +112,41 @@ router.post('/book-slot', async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Slot is cancelled' });
     }
 
-    const existingBooking = await Booking.findOne({
+    // Count existing bookings (excluding cancelled)
+    const bookingCount = await Booking.countDocuments({
       slotId,
       status: { $nin: ['cancelled', 'rejected'] },
     });
 
+    // Check if slot is full
+    if (bookingCount >= slot.capacity) {
+      // Slot is full - check if student wants to join waitlist
+      const existingWaitlist = await Waitlist.findOne({
+        slotId,
+        studentId: req.userId,
+        status: { $ne: 'cancelled' },
+      });
+
+      if (existingWaitlist) {
+        return res.status(400).json({ error: 'You are already on the waitlist for this slot' });
+      }
+
+      return res.status(400).json({
+        error: 'Slot is fully booked',
+        isFull: true,
+        message: 'Would you like to join the waitlist?',
+      });
+    }
+
+    // Check if student already has a booking
+    const existingBooking = await Booking.findOne({
+      slotId,
+      studentId: req.userId,
+      status: { $nin: ['cancelled', 'rejected'] },
+    });
+
     if (existingBooking) {
-      return res.status(400).json({ error: 'Slot is already booked' });
+      return res.status(400).json({ error: 'You have already booked this slot' });
     }
 
     const booking = new Booking({
@@ -110,7 +157,10 @@ router.post('/book-slot', async (req: AuthRequest, res: Response) => {
     });
 
     await booking.save();
-    res.status(201).json(booking);
+    res.status(201).json({
+      message: 'Slot booked successfully',
+      booking,
+    });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

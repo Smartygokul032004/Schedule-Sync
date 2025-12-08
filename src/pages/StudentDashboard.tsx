@@ -3,6 +3,8 @@ import { Search, Calendar, MapPin, Clock, CheckCircle, User } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { OnlineStatusBadge } from '../components/OnlineStatusBadge';
+import { WaitlistModal } from '../components/WaitlistModal';
+import { RecurringAppointmentModal } from '../components/RecurringAppointmentModal';
 import api from '../utils/api';
 
 interface Faculty {
@@ -201,6 +203,12 @@ const FacultyScheduleView: React.FC<FacultyScheduleViewProps> = ({ faculty, onBa
   const [slots, setSlots] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [waitlistModal, setWaitlistModal] = useState<{ isOpen: boolean; slotId?: string; slotDate?: string }>({
+    isOpen: false,
+  });
+  const [recurringModal, setRecurringModal] = useState<{ isOpen: boolean; slotId?: string; slotDate?: string }>({
+    isOpen: false,
+  });
 
   useEffect(() => {
     fetchSlots();
@@ -222,14 +230,31 @@ const FacultyScheduleView: React.FC<FacultyScheduleViewProps> = ({ faculty, onBa
     }
   };
 
-  const handleBookSlot = async (slotId: string) => {
+  const handleBookSlot = async (slot: any) => {
     try {
-      await api.post('/student/book-slot', { slotId });
+      await api.post('/student/book-slot', { slotId: slot._id });
       alert('Slot booked successfully!');
       fetchSlots();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to book slot');
+      if (error.response?.data?.isFull) {
+        // Show waitlist modal
+        setWaitlistModal({
+          isOpen: true,
+          slotId: slot._id,
+          slotDate: slot.startTime,
+        });
+      } else {
+        alert(error.response?.data?.error || 'Failed to book slot');
+      }
     }
+  };
+
+  const handleRecurringClick = (slot: any) => {
+    setRecurringModal({
+      isOpen: true,
+      slotId: slot._id,
+      slotDate: slot.startTime,
+    });
   };
 
   const filteredSlots = selectedDate
@@ -314,17 +339,62 @@ const FacultyScheduleView: React.FC<FacultyScheduleViewProps> = ({ faculty, onBa
                       </p>
                     )}
 
-                    <button
-                      onClick={() => handleBookSlot(slot._id)}
-                      disabled={slot.isBooked}
-                      className={`w-full py-2 rounded-lg font-medium transition ${
-                        slot.isBooked
-                          ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                          : 'bg-blue-600 text-white hover:bg-blue-700'
-                      }`}
-                    >
-                      {slot.isBooked ? 'Already Booked' : 'Book Slot'}
-                    </button>
+                    {/* Show slot status */}
+                    <div className="mb-3 text-sm">
+                      {slot.isFull ? (
+                        <p className="text-red-600 font-medium">
+                          🔴 Fully booked ({slot.bookingCount}/{slot.capacity})
+                        </p>
+                      ) : (
+                        <p className="text-green-600 font-medium">
+                          ✅ Available ({slot.availableSpots} spot{slot.availableSpots !== 1 ? 's' : ''})
+                        </p>
+                      )}
+                      {slot.waitlistCount > 0 && (
+                        <p className="text-amber-600">
+                          ⏳ {slot.waitlistCount} on waitlist
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Action buttons */}
+                    {slot.isBooked ? (
+                      <button
+                        disabled
+                        className="w-full py-2 rounded-lg font-medium bg-slate-200 text-slate-500 cursor-not-allowed"
+                      >
+                        ✓ Already Booked
+                      </button>
+                    ) : slot.isFull ? (
+                      <button
+                        onClick={() =>
+                          setWaitlistModal({
+                            isOpen: true,
+                            slotId: slot._id,
+                            slotDate: slot.startTime,
+                          })
+                        }
+                        className="w-full py-2 rounded-lg font-medium bg-amber-600 text-white hover:bg-amber-700 transition"
+                      >
+                        Join Waitlist
+                      </button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleBookSlot(slot)}
+                          className="flex-1 py-2 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 transition"
+                        >
+                          Book Slot
+                        </button>
+                        <button
+                          onClick={() => handleRecurringClick(slot)}
+                          title="Book this slot as a recurring appointment"
+                          className="flex-1 py-2 rounded-lg font-medium bg-purple-600 text-white hover:bg-purple-700 transition"
+                        >
+                          🔄 Recurring
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -332,6 +402,24 @@ const FacultyScheduleView: React.FC<FacultyScheduleViewProps> = ({ faculty, onBa
           </div>
         </div>
       )}
+
+      <WaitlistModal
+        isOpen={waitlistModal.isOpen}
+        slotId={waitlistModal.slotId || ''}
+        facultyName={faculty.name}
+        slotDate={waitlistModal.slotDate || ''}
+        onClose={() => setWaitlistModal({ isOpen: false })}
+        onSuccess={fetchSlots}
+      />
+
+      <RecurringAppointmentModal
+        isOpen={recurringModal.isOpen}
+        slotId={recurringModal.slotId || ''}
+        slotDate={recurringModal.slotDate || ''}
+        facultyName={faculty.name}
+        onClose={() => setRecurringModal({ isOpen: false })}
+        onSuccess={fetchSlots}
+      />
     </div>
   );
 };
