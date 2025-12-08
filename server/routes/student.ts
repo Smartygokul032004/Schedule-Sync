@@ -215,6 +215,47 @@ router.post('/cancel-booking/:bookingId', async (req: AuthRequest, res: Response
   }
 });
 
+// Cancel booking (PUT - matches frontend call)
+router.put('/bookings/:bookingId/cancel', async (req: AuthRequest, res: Response) => {
+  try {
+    const { bookingId } = req.params;
+    const { reason } = req.body;
+    
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    if (booking.studentId.toString() !== req.userId) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    booking.status = 'cancelled';
+    booking.cancellationReason = reason || 'Cancelled by student';
+    await booking.save();
+
+    // Send notification to faculty
+    const student = await User.findById(req.userId);
+    const faculty = await User.findById(booking.facultyId);
+    
+    if (student && faculty) {
+      await notifyBookingCancelled(
+        booking._id.toString(),
+        student._id.toString(),
+        faculty._id.toString(),
+        faculty.name,
+        student.name,
+        booking.cancellationReason
+      );
+    }
+
+    res.json({ message: 'Booking cancelled successfully', booking });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get all bookings for student
 router.get('/bookings', async (req: AuthRequest, res: Response) => {
   try {

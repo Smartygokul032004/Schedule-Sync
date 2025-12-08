@@ -49,18 +49,24 @@ export const FacultyDashboard: React.FC = () => {
 
     try {
       await api.delete(`/faculty/slots/${slotId}`);
+      alert('✅ Slot deleted successfully!');
       setSlots(slots.filter((s) => s._id !== slotId));
-    } catch (error) {
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.error || error.message || 'Failed to delete slot';
       console.error('Failed to delete slot:', error);
+      alert(`❌ Error: ${errorMsg}`);
     }
   };
 
   const handleCancelSlot = async (slotId: string) => {
     try {
       await api.post(`/faculty/slots/${slotId}/cancel`);
+      alert('✅ Slot cancelled successfully!');
       fetchSlots();
-    } catch (error) {
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.error || error.message || 'Failed to cancel slot';
       console.error('Failed to cancel slot:', error);
+      alert(`❌ Error: ${errorMsg}`);
     }
   };
 

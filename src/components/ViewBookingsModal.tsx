@@ -82,26 +82,37 @@ export const ViewBookingsModal: React.FC<ViewBookingsModalProps> = ({ onClose })
                       </p>
                     </div>
                   </div>
-                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                    Confirmed
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    booking.status === 'approved' ? 'bg-green-100 text-green-700' :
+                    booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                    booking.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                    'bg-slate-100 text-slate-700'
+                  }`}>
+                    {booking.status}
                   </span>
                 </div>
 
-                <div className="space-y-2 text-sm">
-                  <p className="flex items-center gap-2 text-slate-700">
-                    <Calendar size={16} className="text-blue-600 flex-shrink-0" />
-                    {formatDateTime(booking.slot.startTime)}
-                  </p>
-                  <p className="flex items-center gap-2 text-slate-700">
-                    <MapPin size={16} className="text-green-600 flex-shrink-0" />
-                    {booking.slot.location}
-                  </p>
-                  {booking.slot.notes && (
-                    <p className="text-slate-600">
-                      <strong>Notes:</strong> {booking.slot.notes}
+                {booking.slot ? (
+                  <div className="space-y-2 text-sm">
+                    <p className="flex items-center gap-2 text-slate-700">
+                      <Calendar size={16} className="text-blue-600 flex-shrink-0" />
+                      {formatDateTime(booking.slot.startTime)}
                     </p>
-                  )}
-                </div>
+                    <p className="flex items-center gap-2 text-slate-700">
+                      <MapPin size={16} className="text-green-600 flex-shrink-0" />
+                      {booking.slot.location}
+                    </p>
+                    {booking.slot.notes && (
+                      <p className="text-slate-600">
+                        <strong>Notes:</strong> {booking.slot.notes}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-sm text-slate-500">
+                    Slot information not available
+                  </div>
+                )}
               </div>
             ))}
           </div>

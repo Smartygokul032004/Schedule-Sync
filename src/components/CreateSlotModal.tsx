@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Clock, MapPin, FileText } from 'lucide-react';
+import { X, Calendar, Clock, MapPin, FileText, Users } from 'lucide-react';
 import api from '../utils/api';
 
 interface CreateSlotModalProps {
@@ -12,6 +12,7 @@ export const CreateSlotModal: React.FC<CreateSlotModalProps> = ({ onClose, onSuc
   const [endTime, setEndTime] = useState('');
   const [location, setLocation] = useState('');
   const [notes, setNotes] = useState('');
+  const [capacity, setCapacity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,7 +27,7 @@ export const CreateSlotModal: React.FC<CreateSlotModalProps> = ({ onClose, onSuc
         endTime,
         location,
         notes,
-        capacity: 1,
+        capacity: parseInt(capacity.toString()),
       });
       onSuccess();
     } catch (err: any) {
@@ -88,6 +89,23 @@ export const CreateSlotModal: React.FC<CreateSlotModalProps> = ({ onClose, onSuc
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              <Users size={16} className="inline mr-2" />
+              Capacity (How many students can book?)
+            </label>
+            <input
+              type="number"
+              value={capacity}
+              onChange={(e) => setCapacity(Math.max(1, parseInt(e.target.value) || 1))}
+              min="1"
+              max="50"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            <p className="text-xs text-slate-500 mt-1">Maximum 50 students per slot</p>
           </div>
 
           <div>

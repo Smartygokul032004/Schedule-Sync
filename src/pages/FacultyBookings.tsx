@@ -46,9 +46,12 @@ export const FacultyBookings: React.FC = () => {
   const updateBookingStatus = async (bookingId: string, action: 'approve' | 'reject' | 'cancel') => {
     try {
       await api.put(`/faculty/bookings/${bookingId}/${action}`);
+      alert(`✅ Booking ${action}ed successfully!`);
       fetchBookings();
-    } catch (error) {
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.error || error.message || `Failed to ${action} booking`;
       console.error(`Failed to ${action} booking:`, error);
+      alert(`❌ Error: ${errorMsg}`);
     }
   };
 

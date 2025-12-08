@@ -46,10 +46,13 @@ export const StudentBookings: React.FC = () => {
 
   const cancelBooking = async (bookingId: string) => {
     try {
-      await api.put(`/student/bookings/${bookingId}/cancel`);
+      await api.put(`/student/bookings/${bookingId}/cancel`, {});
+      alert('✅ Booking cancelled successfully!');
       fetchBookings();
-    } catch (error) {
-      console.error('Failed to cancel booking:', error);
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.error || error.message || 'Failed to cancel booking';
+      console.error('Cancel error:', error);
+      alert(`❌ Error: ${errorMsg}`);
     }
   };
 

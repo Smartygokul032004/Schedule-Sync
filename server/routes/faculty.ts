@@ -121,7 +121,7 @@ router.put('/slots/:id', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Slot not found' });
     }
 
-    if (slot.facultyId !== req.userId) {
+    if (slot.facultyId.toString() !== req.userId) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
@@ -147,7 +147,7 @@ router.delete('/slots/:id', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Slot not found' });
     }
 
-    if (slot.facultyId !== req.userId) {
+    if (slot.facultyId.toString() !== req.userId) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
@@ -167,7 +167,7 @@ router.post('/slots/:id/cancel', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Slot not found' });
     }
 
-    if (slot.facultyId !== req.userId) {
+    if (slot.facultyId.toString() !== req.userId) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
@@ -254,7 +254,7 @@ router.put('/bookings/:bookingId/approve', async (req: AuthRequest, res: Respons
 // Reject a booking
 router.put('/bookings/:bookingId/reject', async (req: AuthRequest, res: Response) => {
   try {
-    const { reason } = req.body;
+    const { reason } = req.body || {};
     
     const booking = await Booking.findByIdAndUpdate(
       req.params.bookingId,
@@ -271,7 +271,7 @@ router.put('/bookings/:bookingId/reject', async (req: AuthRequest, res: Response
     const faculty = await User.findById(req.userId);
     
     if (student && faculty) {
-      await notifyBookingRejected(booking._id.toString(), student._id.toString(), faculty.name, reason);
+      await notifyBookingRejected(booking._id.toString(), student._id.toString(), faculty.name, reason || 'Rejected by faculty');
     }
 
     res.json({ message: 'Booking rejected', booking });
@@ -283,11 +283,11 @@ router.put('/bookings/:bookingId/reject', async (req: AuthRequest, res: Response
 // Cancel a booking
 router.put('/bookings/:bookingId/cancel', async (req: AuthRequest, res: Response) => {
   try {
-    const { reason } = req.body;
+    const { reason } = req.body || {};
     
     const booking = await Booking.findByIdAndUpdate(
       req.params.bookingId,
-      { status: 'cancelled', cancellationReason: reason },
+      { status: 'cancelled', cancellationReason: reason || 'Cancelled by faculty' },
       { new: true }
     ).populate('studentId', 'name email');
 
